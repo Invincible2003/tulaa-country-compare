@@ -26,18 +26,34 @@ export interface Country {
 }
 
 const fetchCountries = async (): Promise<Country[]> => {
-  const response = await fetch(
-    "https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,subregion,population,area,currencies,languages,timezones,maps"
-  );
+  // Fetch all countries without field filtering (more reliable)
+  const response = await fetch("https://restcountries.com/v3.1/all");
   
   if (!response.ok) {
-    throw new Error("Failed to fetch countries");
+    throw new Error(`Failed to fetch countries: ${response.status}`);
   }
   
   const data = await response.json();
-  return data.sort((a: Country, b: Country) => 
-    a.name.common.localeCompare(b.name.common)
-  );
+  
+  // Map to only the fields we need and sort A-Z
+  return data
+    .map((country: any) => ({
+      name: country.name,
+      cca3: country.cca3,
+      flags: country.flags,
+      capital: country.capital,
+      region: country.region,
+      subregion: country.subregion,
+      population: country.population,
+      area: country.area,
+      currencies: country.currencies,
+      languages: country.languages,
+      timezones: country.timezones,
+      maps: country.maps,
+    }))
+    .sort((a: Country, b: Country) => 
+      a.name.common.localeCompare(b.name.common)
+    );
 };
 
 export const useCountries = () => {
