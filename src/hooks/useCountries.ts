@@ -26,8 +26,9 @@ export interface Country {
 }
 
 const fetchCountries = async (): Promise<Country[]> => {
-  // Fetch all countries without field filtering (more reliable)
-  const response = await fetch("https://restcountries.com/v3.1/all");
+  const response = await fetch(
+    "https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,subregion,population,area,currencies,languages,timezones,maps"
+  );
   
   if (!response.ok) {
     throw new Error(`Failed to fetch countries: ${response.status}`);
