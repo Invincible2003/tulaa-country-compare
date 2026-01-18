@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Check, ChevronsUpDown, Search, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Check, ChevronsUpDown, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,12 +77,12 @@ export const CountrySelector = ({
             ) : selectedCountry ? (
               <div className="flex items-center gap-3">
                 <img
-                  src={selectedCountry.flags.svg}
-                  alt={selectedCountry.flags.alt || selectedCountry.name.common}
+                  src={selectedCountry.flagSvg ?? selectedCountry.flagPng ?? ""}
+                  alt={selectedCountry.nameCommon}
                   className="h-8 w-12 rounded object-cover shadow-sm"
                 />
                 <div className="flex flex-col">
-                  <span className="font-medium">{selectedCountry.name.common}</span>
+                  <span className="font-medium">{selectedCountry.nameCommon}</span>
                   <span className="text-xs text-muted-foreground">{selectedCountry.cca3}</span>
                 </div>
               </div>
@@ -101,7 +101,7 @@ export const CountrySelector = ({
                 {countries.map((country) => (
                   <CommandItem
                     key={country.cca3}
-                    value={`${country.name.common} ${country.cca3}`}
+                    value={`${country.nameCommon} ${country.cca3}`}
                     onSelect={() => {
                       onSelect(country);
                       setOpen(false);
@@ -109,12 +109,12 @@ export const CountrySelector = ({
                     className="flex items-center gap-3 px-3 py-2.5"
                   >
                     <img
-                      src={country.flags.svg}
-                      alt={country.flags.alt || country.name.common}
+                      src={country.flagSvg ?? country.flagPng ?? ""}
+                      alt={country.nameCommon}
                       className="h-6 w-9 rounded object-cover shadow-sm"
                     />
                     <div className="flex-1">
-                      <span className="font-medium text-sm">{country.name.common}</span>
+                      <span className="font-medium text-sm">{country.nameCommon}</span>
                       <span className="ml-2 text-xs text-muted-foreground">{country.cca3}</span>
                     </div>
                     {selectedCountry?.cca3 === country.cca3 && (
