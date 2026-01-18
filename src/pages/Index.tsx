@@ -1,21 +1,40 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeftRight, RefreshCw, Share2, Sparkles, AlertCircle } from "lucide-react";
+import { ArrowLeftRight, RefreshCw, Share2, Sparkles, AlertCircle, Shuffle, WifiOff } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CountrySelector } from "@/components/CountrySelector";
 import { ComparisonCard } from "@/components/ComparisonCard";
 import { ComparisonSummary } from "@/components/ComparisonSummary";
-import { SkeletonCard } from "@/components/SkeletonCard";
 import { Button } from "@/components/ui/button";
 import { useCountries, Country } from "@/hooks/useCountries";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Index = () => {
-  const { data: countries = [], isLoading, isError, refetch } = useCountries();
+  const { data: countries = [], isLoading, isError, refetch, usingFallback } = useCountries();
   const [countryA, setCountryA] = useState<Country | null>(null);
   const [countryB, setCountryB] = useState<Country | null>(null);
   const [showComparison, setShowComparison] = useState(false);
+
+  // Set default countries (India and USA) when data loads
+  useEffect(() => {
+    if (countries.length > 0 && !countryA && !countryB) {
+      const india = countries.find((c) => c.cca3 === "IND");
+      const usa = countries.find((c) => c.cca3 === "USA");
+      if (india) setCountryA(india);
+      if (usa) setCountryB(usa);
+    }
+  }, [countries, countryA, countryB]);
+
+  // Random compare handler
+  const handleRandomCompare = useCallback(() => {
+    if (countries.length < 2) return;
+    const shuffled = [...countries].sort(() => Math.random() - 0.5);
+    setCountryA(shuffled[0]);
+    setCountryB(shuffled[1]);
+    setShowComparison(true);
+  }, [countries]);
 
   const handleCompare = useCallback(() => {
     if (!countryA || !countryB) {
@@ -102,27 +121,14 @@ const Index = () => {
           </p>
         </motion.div>
 
-        {/* Error State */}
-        {isError && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-8 text-center"
-          >
-            <AlertCircle className="h-12 w-12 text-destructive" />
-            <div>
-              <h3 className="mb-1 text-lg font-semibold text-foreground">
-                Failed to load countries
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Please check your connection and try again.
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4" />
-              Retry
-            </Button>
-          </motion.div>
+        {/* Fallback Banner */}
+        {usingFallback && (
+          <Alert className="mb-6 border-yellow-500/30 bg-yellow-500/10">
+            <WifiOff className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="text-yellow-600 dark:text-yellow-400">
+              Using offline country list (API unavailable). Some countries may be missing.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Country Selectors */}
@@ -156,16 +162,26 @@ const Index = () => {
           className="mb-10 flex flex-wrap items-center justify-center gap-3"
         >
           <Button
-            variant="primary"
+            variant="default"
             size="lg"
             onClick={handleCompare}
             disabled={!countryA || !countryB}
+            className="bg-primary hover:bg-primary/90"
           >
             <Sparkles className="h-4 w-4" />
-            Compare
+            Compare Now
           </Button>
           <Button
-            variant="glass"
+            variant="secondary"
+            size="lg"
+            onClick={handleRandomCompare}
+            disabled={countries.length < 2}
+          >
+            <Shuffle className="h-4 w-4" />
+            Random Compare
+          </Button>
+          <Button
+            variant="outline"
             size="lg"
             onClick={handleSwap}
             disabled={!countryA && !countryB}
@@ -174,7 +190,7 @@ const Index = () => {
             Swap
           </Button>
           <Button
-            variant="secondary"
+            variant="ghost"
             size="lg"
             onClick={handleReset}
           >
