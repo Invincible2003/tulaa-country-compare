@@ -18,7 +18,8 @@ export interface Country {
 }
 
 const CACHE_KEY = "countries_cache";
-const API_URL = "https://restcountries.com/v3.1/all";
+const API_URL =
+"https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,subregion,population,area";
 
 // Fallback countries for when API and cache fail
 const FALLBACK_COUNTRIES: Country[] = [
