@@ -105,7 +105,7 @@ const Compare = () => {
   const [countryA, setCountryA] = useState<Country | null>(null);
   const [countryB, setCountryB] = useState<Country | null>(null);
   
-  const favoriteKey = `${c1}-${c2}`;
+  
 
   useEffect(() => {
     if (countries.length > 0) {
@@ -178,12 +178,12 @@ const Compare = () => {
   }, [c1, c2]);
 
   const handleToggleFavorite = useCallback(() => {
-    toggleFavorite(favoriteKey);
+    toggleFavorite(c1, c2);
     toast({
-      title: isFavorite(favoriteKey) ? "Removed from favorites" : "Added to favorites",
+      title: isFavorite(c1, c2) ? "Removed from favorites" : "Added to favorites",
       description: `${countryA?.nameCommon ?? c1} vs ${countryB?.nameCommon ?? c2}`,
     });
-  }, [favoriteKey, toggleFavorite, isFavorite, countryA, countryB, c1, c2]);
+  }, [c1, c2, toggleFavorite, isFavorite, countryA, countryB]);
 
   const isLoading = countriesLoading || wbLoadingA || wbLoadingB;
 
@@ -274,12 +274,12 @@ const Compare = () => {
             Export PNG
           </Button>
           <Button variant="outline" onClick={handleToggleFavorite}>
-            {isFavorite(favoriteKey) ? (
+            {isFavorite(c1, c2) ? (
               <HeartOff className="h-4 w-4 text-red-500" />
             ) : (
               <Heart className="h-4 w-4" />
             )}
-            {isFavorite(favoriteKey) ? "Unfavorite" : "Favorite"}
+            {isFavorite(c1, c2) ? "Unfavorite" : "Favorite"}
           </Button>
         </div>
 

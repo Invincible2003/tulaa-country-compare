@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
 
 // Normalized Country type - no nested objects for UI usage
 export interface Country {
@@ -18,7 +17,7 @@ export interface Country {
 }
 
 const CACHE_KEY = "countries_cache";
-const API_URL = "https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,subregion,population,area,currencies,languages,timezones";
+const API_URL = "https://restcountries.com/v3.1/all";
 
 // Fallback countries for when API and cache fail
 const FALLBACK_COUNTRIES: Country[] = [
@@ -121,6 +120,7 @@ const fetchCountries = async (): Promise<{ countries: Country[]; fromFallback: b
   try {
     const response = await fetch(API_URL, {
       signal: controller.signal,
+      cache: "no-store",
     });
     
     clearTimeout(timeoutId);
@@ -158,47 +158,21 @@ const fetchCountries = async (): Promise<{ countries: Country[]; fromFallback: b
 };
 
 export const useCountries = () => {
-  const [usingFallback, setUsingFallback] = useState(false);
-
   const query = useQuery({
     queryKey: ["countries"],
     queryFn: fetchCountries,
-    staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-    select: (data) => data.countries,
   });
 
-  // Track fallback status from the query result
-  useEffect(() => {
-    if (query.data) {
-      // Access the raw data before select transform
-      const rawData = query.data as unknown as { countries: Country[]; fromFallback: boolean } | Country[];
-      if (rawData && typeof rawData === 'object' && 'fromFallback' in rawData) {
-        setUsingFallback(rawData.fromFallback);
-      }
-    }
-  }, [query.data]);
-
-  // Also check on initial cache restoration
-  useEffect(() => {
-    const checkFallback = async () => {
-      try {
-        const cached = getCachedCountries();
-        if (!cached && query.data && query.data.length <= FALLBACK_COUNTRIES.length) {
-          setUsingFallback(true);
-        }
-      } catch {
-        // Ignore errors
-      }
-    };
-    checkFallback();
-  }, [query.data]);
+  const countries = query.data?.countries ?? [];
+  const usingFallback = query.data?.fromFallback ?? false;
 
   return {
     ...query,
-    data: query.data ?? [],
+    data: countries,
     usingFallback,
   };
 };
