@@ -116,7 +116,7 @@ const normalizeCountry = (raw: any): Country => ({
 
 const fetchCountries = async (): Promise<{ countries: Country[]; fromFallback: boolean }> => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 10 second timeout
 
   try {
     const response = await fetch(API_URL, {
@@ -165,15 +165,14 @@ const fetchCountries = async (): Promise<{ countries: Country[]; fromFallback: b
 export const useCountries = () => {
   const [usingFallback, setUsingFallback] = useState(false);
 
-  const query = useQuery({
-    queryKey: ["countries"],
-    queryFn: fetchCountries,
-    staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    gcTime: 24 * 60 * 60 * 1000, // 24 hours
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-    select: (data) => data.countries,
-  });
+ const query = useQuery({
+  queryKey: ["countries"],
+  queryFn: fetchCountries,
+  staleTime: 24 * 60 * 60 * 1000,
+  gcTime: 24 * 60 * 60 * 1000,
+  retry: 3,
+  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+});
 
   // Track fallback status from the query result
   useEffect(() => {
@@ -200,10 +199,9 @@ export const useCountries = () => {
     };
     checkFallback();
   }, [query.data]);
-
-  return {
-    ...query,
-    data: query.data ?? [],
-    usingFallback,
-  };
+return {
+  ...query,
+  data: query.data?.countries ?? [],
+  usingFallback: query.data?.fromFallback ?? false,
+};
 };
